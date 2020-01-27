@@ -68,13 +68,6 @@ class Function(ABC):
         The y values are returned for an array of the input x values
         """
         pass
-    
-    @abstractmethod
-    def invalid_case(self):
-        """
-        This method handles all invalid parameters for A and B
-        """
-        pass
 
 class SineWave(Function):
     """
@@ -90,6 +83,3 @@ class SineWave(Function):
 
     def run_function(self, x, A, B):
         return (A*np.sin(B*x))
-    
-    def invalid_case(self):
-        return super().invalid_case()
