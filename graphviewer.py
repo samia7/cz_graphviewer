@@ -9,10 +9,11 @@ from PyQt5 import QtGui, uic
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton,
                             QVBoxLayout, QHBoxLayout, QLineEdit, QMessageBox, 
                             QLabel, QComboBox)
+from PyQt5.QtCore import pyqtSlot
 import pyqtgraph as pg
 import sys
 import numpy as np
-from PyQt5.QtCore import pyqtSlot
+
 
 class GraphViewer(QMainWindow):
     """
@@ -21,9 +22,10 @@ class GraphViewer(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(GraphViewer, self).__init__(*args, **kwargs)
         self.title = 'Graph Viewer'
+        # Default domain
         self.x_min = 0
         self.x_max = 10
-        self.iterations = self.x_max*10
+        self.iterations = self.x_max*100
         self.function = None
         self.x = None
         self.y = None
@@ -74,7 +76,7 @@ class GraphViewer(QMainWindow):
         layout.addWidget(self.graphWidget)
         self.graphWidget.setLabel('left', 'f(x)')
         self.graphWidget.setLabel('bottom', 'x')
-        self.plot_graph() 
+        # self.plot_graph() 
         layout.addLayout(param_layout)
         layout.addLayout(x_layout)
         self.setCentralWidget(window)
@@ -95,13 +97,24 @@ class GraphViewer(QMainWindow):
     def on_clickx(self):
         x_min_value = self.xmin_textbox.text()
         x_max_value = self.xmax_textbox.text()
-        #QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        # Check whether the range for x is invalid
+        try:
+            x_min_value = float(x_min_value)
+            x_max_value = float(x_max_value)
+            if x_max_value > x_min_value:
+                self.x_max = x_max_value
+                self.x_min = x_min_value
+                self.plot_graph()
+            else:
+                QMessageBox.question(self, 'Error!', "x_max must be greater than x_min", QMessageBox.Ok, QMessageBox.Ok)    
+        except ValueError:
+            QMessageBox.question(self, 'Error!', "Domain must be a number", QMessageBox.Ok, QMessageBox.Ok)
         self.xmin_textbox.setText("")
         self.xmax_textbox.setText("")
 
     @pyqtSlot()
     def select_function(self):
-        print (self.combo_box.currentText())
+        #print (self.combo_box.currentText())
         # Change the object based on the user selection
         self.function = SineWave()
         # Run control_x to get the y values for the desired function
@@ -116,6 +129,7 @@ class GraphViewer(QMainWindow):
     def plot_graph(self):
         self.select_function()
         # plot data: x, y values
+        self.graphWidget.clear()
         self.graphWidget.plot(self.x, self.y)
         self.graphWidget.setTitle(self.function.name)
         self.graphWidget.setLabel('top', 'A = {}, B = {}'
