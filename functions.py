@@ -10,8 +10,8 @@ For each class inherting Function:
 Name: Defines the name identifier used in the GUI
 A, B: The changable parameters defining the function
 """ 
-
 from abc import ABC, abstractmethod
+import numpy as np
 
 class Function(ABC):
     """
@@ -22,7 +22,7 @@ class Function(ABC):
         super().__init__()
 
     @abstractmethod
-    def run_function(self, A, B):
+    def run_function(self, x):
         """
         This method defines the operation that is performed by a function.
         """
@@ -45,9 +45,8 @@ class SineWave(Function):
         self.A = A
         self.B = B
 
-    def run_function(self):
-        return (self.A + self.B)
+    def run_function(self, x):
+        return (self.A*np.sin(self.B*x))
     
     def invalid_case(self):
         return super().invalid_case()
-
