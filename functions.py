@@ -21,10 +21,35 @@ class Function(ABC):
     def __init__(self):
         super().__init__()
 
+    @property
+    @abstractmethod
+    def name(self):
+        """
+        The name of the function to be displayed on the GUI
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def A_des(self):
+        """
+        The description of A to be displayed on the GUI
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def B_des(self):
+        """
+        The description of B to be displayed on the GUI
+        """
+        pass
+
     @abstractmethod
     def run_function(self, x):
         """
         This method defines the operation that is performed by a function.
+        The y values are returned for an array of the input x values
         """
         pass
     
@@ -41,6 +66,10 @@ class SineWave(Function):
     A: The amplitude of the wave (default amplitude = 1)
     B: The time period of the wave (default period = 1)
     """
+    name = "Sine Wave"
+    A_des = "The amplitude of the wave"
+    B_des = "The time period of the wave"
+
     def __init__(self, A=1, B=1):
         self.A = A
         self.B = B
