@@ -29,6 +29,8 @@ class GraphViewer(QMainWindow):
         self.function = None
         self.x = None
         self.y = None
+        self.A = None
+        self.B = None
         self.initUI()
 
     def initUI(self):
@@ -80,17 +82,24 @@ class GraphViewer(QMainWindow):
         layout.addLayout(param_layout)
         layout.addLayout(x_layout)
         self.setCentralWidget(window)
+        self.select_function()
 
     @pyqtSlot()
     def on_clickA(self):
-        textboxValue = self.A_textbox.text()
-        QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        try:
+            self.A = float(self.A_textbox.text())
+            self.plot_graph()
+        except ValueError:
+            QMessageBox.question(self, 'Error!', "Parameter A must be a number", QMessageBox.Ok, QMessageBox.Ok)
         self.A_textbox.setText("")
     
     @pyqtSlot()
     def on_clickB(self):
-        textboxValue = self.B_textbox.text()
-        QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        try:
+            self.B = float(self.B_textbox.text())
+            self.plot_graph()
+        except ValueError:
+            QMessageBox.question(self, 'Error!', "Parameter B must be a number", QMessageBox.Ok, QMessageBox.Ok)
         self.B_textbox.setText("")
 
     @pyqtSlot()
@@ -117,23 +126,24 @@ class GraphViewer(QMainWindow):
         #print (self.combo_box.currentText())
         # Change the object based on the user selection
         self.function = SineWave()
-        # Run control_x to get the y values for the desired function
-        self.control_x()
+        self.A = self.function.A_default
+        self.B = self.function.B_default
+        self.plot_graph()
 
     def control_x(self):
         # Implementation of changing x
         # The sliding thing for x
         self.x = np.linspace(self.x_min, self.x_max, num=self.iterations)
-        self.y = self.function.run_function(self.x)
+        self.y = self.function.run_function(self.x, self.A, self.B)
 
     def plot_graph(self):
-        self.select_function()
+        self.control_x()
         # plot data: x, y values
         self.graphWidget.clear()
         self.graphWidget.plot(self.x, self.y)
         self.graphWidget.setTitle(self.function.name)
-        self.graphWidget.setLabel('top', 'A = {}, B = {}'
-            .format(self.function.A_des, self.function.B_des))
+        self.graphWidget.setLabel('top', 'A = {} (A = {}), B = {} (B = {})'
+            .format(self.function.A_des, self.A, self.function.B_des, self.B))
 
 def main():
     app = QApplication(sys.argv)
