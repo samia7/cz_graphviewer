@@ -1,34 +1,107 @@
 #!/usr/bin/env python
 
 """
-Script that runs the graph viewer interface and contains the 
-functionality for the the GUI
+Script that runs the graph viewer interface and contains the functionality 
+for the the GUI
 """ 
 from functions import *
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtGui, uic
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QPushButton,
+                            QVBoxLayout, QHBoxLayout, QLineEdit, QMessageBox, 
+                            QLabel, QComboBox)
 import pyqtgraph as pg
 import sys
 import numpy as np
+from PyQt5.QtCore import pyqtSlot
 
-class GraphViewer(QtWidgets.QMainWindow):
+class GraphViewer(QMainWindow):
     """
     This class contains the description of the GUI
     """
     def __init__(self, *args, **kwargs):
         super(GraphViewer, self).__init__(*args, **kwargs)
+        self.title = 'Graph Viewer'
         self.x_min = 0
         self.x_max = 10
         self.iterations = self.x_max*10
         self.function = None
         self.x = None
         self.y = None
+        self.initUI()
+
+    def initUI(self):
+        """
+        This method initializes the UI for the the graph viewer app
+        """
+        self.setWindowTitle(self.title)
+        # Layout for combo box to choose between the functions
+        combo_layout = QHBoxLayout()
+        self.combo_box = QComboBox()
+        self.combo_box.addItems(["1",'2'])
+        self.combo_box.activated.connect(self.select_function)
+        combo_layout.addWidget(QLabel('Select the desired function:'))
+        combo_layout.addWidget(self.combo_box)
+        # Layout for changing A and B parameters
+        param_layout = QHBoxLayout()
+        self.A_textbox = QLineEdit(self)
+        self.A_button = QPushButton('Set A', self)
+        self.A_button.clicked.connect(self.on_clickA)
+        param_layout.addWidget(self.A_textbox)
+        param_layout.addWidget(self.A_button)
+        self.B_textbox = QLineEdit(self)
+        self.B_button = QPushButton('Set B', self)
+        self.B_button.clicked.connect(self.on_clickB)
+        param_layout.addWidget(self.B_textbox)
+        param_layout.addWidget(self.B_button)
+        # Layout for setting the range for x
+        x_layout = QHBoxLayout()
+        self.xmin_textbox = QLineEdit(self)
+        self.xmax_textbox = QLineEdit(self)
+        self.x_button = QPushButton('Set domain', self)
+        self.x_button.clicked.connect(self.on_clickx)
+        x_layout.addWidget(self.xmin_textbox)
+        x_layout.addWidget(QLabel('< x <'))
+        x_layout.addWidget(self.xmax_textbox)
+        x_layout.addWidget(self.xmin_textbox)
+        x_layout.addWidget(self.x_button)
+        # Compiling all the layouts together to make parent
+        window = QWidget()
+        layout = QVBoxLayout()
+        window.setLayout(layout)
+        layout.addLayout(combo_layout)
+        # Adding the graph as a widget
         self.graphWidget = pg.PlotWidget()
-        self.setCentralWidget(self.graphWidget)
+        layout.addWidget(self.graphWidget)
         self.graphWidget.setLabel('left', 'f(x)')
         self.graphWidget.setLabel('bottom', 'x')
-        self.plot_graph()
+        self.plot_graph() 
+        layout.addLayout(param_layout)
+        layout.addLayout(x_layout)
+        self.setCentralWidget(window)
+
+    @pyqtSlot()
+    def on_clickA(self):
+        textboxValue = self.A_textbox.text()
+        QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        self.A_textbox.setText("")
     
+    @pyqtSlot()
+    def on_clickB(self):
+        textboxValue = self.B_textbox.text()
+        QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        self.B_textbox.setText("")
+
+    @pyqtSlot()
+    def on_clickx(self):
+        x_min_value = self.xmin_textbox.text()
+        x_max_value = self.xmax_textbox.text()
+        #QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
+        self.xmin_textbox.setText("")
+        self.xmax_textbox.setText("")
+
+    @pyqtSlot()
     def select_function(self):
+        print (self.combo_box.currentText())
         # Change the object based on the user selection
         self.function = SineWave()
         # Run control_x to get the y values for the desired function
@@ -49,7 +122,7 @@ class GraphViewer(QtWidgets.QMainWindow):
             .format(self.function.A_des, self.function.B_des))
 
 def main():
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     main = GraphViewer()
     main.show()
     app.exec_()
