@@ -69,7 +69,7 @@ class Function(ABC):
         """
         pass
 
-class SineWave(Function):
+class SineGraph(Function):
     """
     Name: Sine Wave
     A: The amplitude of the wave (default amplitude = 1)
@@ -83,3 +83,18 @@ class SineWave(Function):
 
     def run_function(self, x, A, B):
         return (A*np.sin(B*x))
+
+class PowerGraph(Function):
+    """
+    Name: Power Graph
+    A: A constant multiplier (default multiplier = 1)
+    B: The power by which x is raised (default power = 2)
+    """
+    name = "Power Graph"
+    A_des = "A constant multiplier"
+    B_des = "The power by which x is raised"
+    A_default = 1
+    B_default = 2
+
+    def run_function(self, x, A, B):
+        return (A*np.power(x,B))
