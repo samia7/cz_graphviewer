@@ -30,10 +30,9 @@ class GraphViewer(QMainWindow):
         self.functions = [SineGraph(), PowerGraph()]
         self.selected_function = None
         # Default domain
-        self.x_min_default = 0
-        self.x_max_default = 10
-        self.x_min = self.x_min_default
-        self.x_max = self.x_max_default
+        self.x_default = [0, 10]
+        self.x_min = self.x_default[0]
+        self.x_max = self.x_default[1]
         self.A = None
         self.B = None
         self.initUI()
@@ -103,7 +102,7 @@ class GraphViewer(QMainWindow):
         except ValueError:
             QMessageBox.question(self, 'Error!', "Parameter A must be a number", 
                                 QMessageBox.Ok, QMessageBox.Ok)
-        self.A_textbox.setText("")
+            self.A_textbox.setText("")
     
     @pyqtSlot()
     def on_clickB(self):
@@ -119,7 +118,7 @@ class GraphViewer(QMainWindow):
         except ValueError:
             QMessageBox.question(self, 'Error!', "Parameter B must be a number", 
                                 QMessageBox.Ok, QMessageBox.Ok)
-        self.B_textbox.setText("")
+            self.B_textbox.setText("")
 
     @pyqtSlot()
     def on_clickx(self):
@@ -145,8 +144,8 @@ class GraphViewer(QMainWindow):
         except ValueError:
             QMessageBox.question(self, 'Error!', "Domain must be a number",
                                 QMessageBox.Ok, QMessageBox.Ok)
-        self.xmin_textbox.setText("")
-        self.xmax_textbox.setText("")
+            self.xmin_textbox.setText("")
+            self.xmax_textbox.setText("")
 
     @pyqtSlot()
     def on_selectComboBox(self):
@@ -166,8 +165,8 @@ class GraphViewer(QMainWindow):
             self.selected_function = self.functions[cur_index-1]
             self.A = self.selected_function.A_default
             self.B = self.selected_function.B_default
-            self.x_min = self.x_min_default
-            self.x_max = self.x_max_default
+            self.x_min = self.x_default[0]
+            self.x_max = self.x_default[1]
             self.plot_graph()
 
     def is_function_selected(self):
@@ -179,6 +178,10 @@ class GraphViewer(QMainWindow):
         if self.selected_function is None:
             QMessageBox.question(self, 'Error!', "No function is selected", 
                                 QMessageBox.Ok, QMessageBox.Ok)
+            self.xmin_textbox.setText("")
+            self.xmax_textbox.setText("")
+            self.A_textbox.setText("")
+            self.B_textbox.setText("")
         else: 
             self.plot_graph()
 
@@ -189,14 +192,17 @@ class GraphViewer(QMainWindow):
         The graph is then plotted and the parameters and function title displayed
         on the GUI
         """
-        # The number of iterations are decided based on the size of the domain
-        # This ensures that step size is small enough for accurate graph
-        iterations = int((self.x_max-self.x_min)*100)
-        x = np.linspace(self.x_min, self.x_max, num=iterations)
-        y = self.selected_function.run_function(x, self.A, self.B)
+        x = self.selected_function.x_range([self.x_min, self.x_max], self.A, self.B)
+        y = self.selected_function.run_function(x[0], self.A, self.B)
+        # Print warning to indicate any modifications to the desired domain
+        try:
+            QMessageBox.question(self, 'Warning!', x[1][1], 
+                                    QMessageBox.Ok, QMessageBox.Ok)
+        except KeyError:
+            pass
         # plot data: x, y values
         self.graphWidget.clear()
-        self.graphWidget.plot(x, y)
+        self.graphWidget.plot(x[0], y)
         self.graphWidget.setTitle(self.selected_function.name)
         self.graphWidget.setLabel('top', 'A = {} (A = {}), B = {} (B = {})'
             .format(self.selected_function.A_des, self.A, self.selected_function.B_des, self.B))
