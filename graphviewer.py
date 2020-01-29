@@ -27,7 +27,7 @@ class GraphViewer(QMainWindow):
         self.title = 'Graph Viewer'
         # All the options for the graphs that can be plotted
         # Add additional index with the name of the class for new functions
-        self.functions = [SineGraph(), PowerGraph()]
+        self.functions = [SineGraph(), PowerGraph(), SawToothGraph()]
         self.selected_function = None
         # Default domain
         self.x_default = [0, 10]

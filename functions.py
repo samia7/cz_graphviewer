@@ -84,14 +84,14 @@ class Function(ABC):
         The input parameters include A and B as some functions have invalid outputs 
         that may be dependent on A or B, for example in the power function, 
         there are invalid outputs dependent on the power (B)
-        Return: An array with the range of x and a dictionary with 0 key and indicating
+        Return: An array with the x values and a dictionary with 0 key and indicating
         no modifications were made to the domain of interest
         """
         # The number of iterations are decided based on the size of the domain
         # This ensures that step size is small enough for accurate graph
         iterations = int((x_extremes[1]-x_extremes[0])*100)
         x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
-        return [x, {0: 'No modifications'}]
+        return [x, {0:''}]
 
 class SineGraph(Function):
     """
@@ -141,6 +141,49 @@ class PowerGraph(Function):
             return [x, {1:change}]
         else:
            return super().x_range(x_extremes, A, B)
-            
-        
-        
+
+class SawToothGraph(Function):
+    """
+    Name: Sawtooth wave
+    A: Vertical Scaling (default amplitude = 2)
+    B: Vertical Shift (default shift = 1)
+    """
+    name = "Sawtooth wave"
+    A_des = "Vertical Scaling"
+    B_des = "Vertical Shift"
+    A_default = 2
+    B_default = 1
+
+    def run_function(self, x, A, B):
+        y = []
+        x_min = x[0]
+        # Check how far off the initial position is from 0
+        while(x_min % 3 != 0):
+            x_min = x_min + 1
+        # Add horizontal shift shift based on what the starting point is
+        h_shift = 3 - x_min
+        # Plot the sawtooth wave, only the amount of shift changes after
+        # every 3 units of x, this is taken into account by subtracting 
+        # the amount of shift needed every time a number divisible by 3 comes
+        # the sawtooth graph can be represented using two functions (2 lines)
+        # one wavelength represents 3 coordinates, after switch the plot is shifted
+        # to the right by an amount of h_shift
+        for x_val in x:
+            if x_val % 3 ==  0:
+                h_shift = h_shift - 3
+                y.append((x_val+h_shift)-0.5)
+            else:
+                y.append(-0.5*(x_val+h_shift)+1)
+        # finally the vertical shifting and scaling is added        
+        y = [(A*y_val)+B for y_val in y]
+        return y
+    
+    def x_range(self, x_extremes, A, B):
+        # Need to sample at at least twice the frequency
+        # in order to not lose any data
+        # Step size 1 is sufficient to ensure no data is lost
+        # Simpler to sample at integer values therefore 
+        # the x_extremes are converted to integers
+        x = np.arange(int(x_extremes[0]), int(x_extremes[1]), 1)
+        x = np.append(x, [int(x_extremes[1])])
+        return [x, {0:''}]
