@@ -128,16 +128,27 @@ class PowerGraph(Function):
     
     def x_range(self, x_extremes, A, B):
         """
-        The domain for x is modified as 0 is a singularity point and
-        negative value raised to a fraction gives a complex solution in python
-        As power operations take precendence over unary operations
-        Therefore for fraction powers range greater than 0 only used
+        The domain for x is modified for B < 1.
+        For fractional B, x min is changed to be > 0, as negative numbers
+        raised to a fractional power gives rise to a complex solution.
+        For whole number negative powers the domain is changed to not include
+        x = 0, this causes the graph to be plotted but a line is plotted
+        connecting the negative and positive side, further modification would
+        include to plot the function as two separate domains so that the two
+        sides do not touch.
         """
         iterations = int((x_extremes[1]-x_extremes[0])*100)
         if B < 1:
-            x_extremes[0] = 0.0001 if x_extremes[0] <= 0 else x_extremes[0]
-            x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
-            change = 'Domain modified: Output only valid for x > 0'
+            frac = Fraction(B).limit_denominator(100).denominator
+            print(frac)
+            if Fraction(B).limit_denominator(100).denominator == 1:
+                x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
+                x = x[x!=0]
+                change = 'Domain modified: Output excludes x = 0'
+            else:    
+                x_extremes[0] = 0.0001 if x_extremes[0] <= 0 else x_extremes[0]
+                x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
+                change = 'Domain modified: Output only valid for x > 0'
             return [x, {1:change}]
         else:
            return super().x_range(x_extremes, A, B)
