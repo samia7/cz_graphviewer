@@ -84,14 +84,14 @@ class Function(ABC):
         The input parameters include A and B as some functions have invalid outputs 
         that may be dependent on A or B, for example in the power function, 
         there are invalid outputs dependent on the power (B)
-        Return: An array with the x values and a dictionary with 0 key and indicating
-        no modifications were made to the domain of interest
+        Return: An array with the array for x in the first index and any message
+        for any changes made to the domain in the 2nd index
         """
         # The number of iterations are decided based on the size of the domain
         # This ensures that step size is small enough for accurate graph
         iterations = int((x_extremes[1]-x_extremes[0])*100)
         x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
-        return [x, {0:''}]
+        return [x]
 
 class SineGraph(Function):
     """
@@ -149,7 +149,7 @@ class PowerGraph(Function):
                 x_extremes[0] = 0.0001 if x_extremes[0] <= 0 else x_extremes[0]
                 x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
                 change = 'Domain modified: Output only valid for x > 0'
-            return [x, {1:change}]
+            return [x, change]
         else:
            return super().x_range(x_extremes, A, B)
 
@@ -197,4 +197,4 @@ class SawToothGraph(Function):
         # the x_extremes are converted to integers
         x = np.arange(int(x_extremes[0]), int(x_extremes[1]), 1)
         x = np.append(x, [int(x_extremes[1])])
-        return [x, {0:''}]
+        return [x]

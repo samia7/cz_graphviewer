@@ -196,9 +196,9 @@ class GraphViewer(QMainWindow):
         y = self.selected_function.run_function(x[0], self.A, self.B)
         # Print warning to indicate any modifications to the desired domain
         try:
-            QMessageBox.question(self, 'Warning!', x[1][1], 
-                                    QMessageBox.Ok, QMessageBox.Ok)
-        except KeyError:
+            QMessageBox.question(self, 'Warning!', x[1], 
+                                QMessageBox.Ok, QMessageBox.Ok)
+        except IndexError:
             pass
         # plot data: x, y values
         self.graphWidget.clear()
