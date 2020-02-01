@@ -72,7 +72,6 @@ class GraphViewer(QMainWindow):
         x_layout.addWidget(self.xmin_textbox)
         x_layout.addWidget(QLabel('< x <'))
         x_layout.addWidget(self.xmax_textbox)
-        x_layout.addWidget(self.xmin_textbox)
         x_layout.addWidget(self.x_button)
         # Compiling all the layouts together to make parent
         window = QWidget()
