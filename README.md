@@ -14,13 +14,6 @@ sudo pip3 install pyqtgraph
 
 sudo pip3 install numpy
 
-Make Executable
----------------
-
-chmod +x graphviewer.py
-
-chmod +x functions.py
-
 Run
 ---------------
 
