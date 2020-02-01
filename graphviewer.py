@@ -3,9 +3,8 @@
 """
 Script that runs the graph viewer interface and contains the functionality 
 for the the GUI
-In order to add new functions to be displayed in the graph viewer add the name 
-of the class defining the function in the list 'functions', found in the initialization
-of the class GraphViewer
+In order to add new functions to be displayed in the graph viewer add an object of the 
+class defining 'functions', found in the initialization of the class GraphViewer
 """ 
 from functions import *
 from PyQt5 import QtGui, uic
@@ -25,8 +24,8 @@ class GraphViewer(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(GraphViewer, self).__init__(*args, **kwargs)
         self.title = 'Graph Viewer'
-        # All the options for the graphs that can be plotted
-        # Add additional index with the name of the class for new functions
+        # All the objects for the graphs that can be plotted
+        # Add additional index with an object for new functions
         self.functions = [SineGraph(), PowerGraph(), SawToothGraph()]
         self.selected_function = None
         # Default domain
@@ -73,16 +72,16 @@ class GraphViewer(QMainWindow):
         x_layout.addWidget(QLabel('< x <'))
         x_layout.addWidget(self.xmax_textbox)
         x_layout.addWidget(self.x_button)
+        # Add graph as a widget
+        self.graphWidget = pg.PlotWidget()
+        self.graphWidget.setLabel('left', 'f(x)')
+        self.graphWidget.setLabel('bottom', 'x')
         # Compiling all the layouts together to make parent
         window = QWidget()
         layout = QVBoxLayout()
         window.setLayout(layout)
         layout.addLayout(combo_layout)
-        # Adding the graph as a widget
-        self.graphWidget = pg.PlotWidget()
         layout.addWidget(self.graphWidget)
-        self.graphWidget.setLabel('left', 'f(x)')
-        self.graphWidget.setLabel('bottom', 'x')
         layout.addLayout(param_layout)
         layout.addLayout(x_layout)
         self.setCentralWidget(window)
@@ -177,12 +176,12 @@ class GraphViewer(QMainWindow):
         if self.selected_function is None:
             QMessageBox.question(self, 'Error!', "Please select a function from the top", 
                                 QMessageBox.Ok, QMessageBox.Ok)
-            self.xmin_textbox.setText("")
-            self.xmax_textbox.setText("")
-            self.A_textbox.setText("")
-            self.B_textbox.setText("")
         else: 
             self.plot_graph()
+        self.xmin_textbox.setText("")
+        self.xmax_textbox.setText("")
+        self.A_textbox.setText("")
+        self.B_textbox.setText("")
 
     def plot_graph(self):
         """

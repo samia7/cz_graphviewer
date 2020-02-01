@@ -10,7 +10,7 @@ To add new functions:
 functions.py: Create a new class describing that function, and extend Functions class. All the 
 methods and properties that need to be overridden are decribed in the Functions class.
 
-graphviewer.py: Add the name of the class to the array 'functions' in the GraphViewer class.
+graphviewer.py: Add an object of the class to the array 'functions' in the GraphViewer class.
 """ 
 from abc import ABC, abstractmethod
 from fractions import Fraction
@@ -21,9 +21,6 @@ class Function(ABC):
     This is the main abstract class that is inherited by all the function 
     subclasses.
     """
-    def __init__(self):
-        super().__init__()
-
     @property
     @abstractmethod
     def name(self):
@@ -36,7 +33,7 @@ class Function(ABC):
     @abstractmethod
     def A_des(self):
         """
-        The description of A to be displayed on the GUI
+        The description of the value A to be displayed on the GUI
         """
         pass
 
@@ -44,7 +41,7 @@ class Function(ABC):
     @abstractmethod
     def B_des(self):
         """
-        The description of B to be displayed on the GUI
+        The description of the value B to be displayed on the GUI
         """
         pass
     
@@ -63,25 +60,24 @@ class Function(ABC):
         The default value for B
         """
         pass
-
+    
+    @property
     @abstractmethod
-    def is_periodic(self):
+    def frequency(self):
         """
-        If the function is periodic return the period of the wave.
-        The period is used to determine the step size to plot the graph.
-        If the function is not periodic call super
+        For non periodic functions set frequency as 0
+        For periodic functions update frequency as needed
         """
-        return 0
+        pass
 
     @abstractmethod
     def run_function(self, x, A, B):
         """
-        This method defines the operation that is performed by a function.
-        The y values are returned for an array of the input x values
-        Parameter A:
-        Parameter B:
-        Parameter x:
-        Return:
+        This method defines the operation that is performed by the function.
+        Parameter A: User adjustable parameter
+        Parameter B: User adjustable parameter
+        Parameter x: array of the input values
+        Return: array of the y values calculated over the x array
         """
         pass
     
@@ -89,71 +85,63 @@ class Function(ABC):
     def x_range(self, x_extremes, A, B):
         """
         The x array is created in this method based on the min and max value of x.
-        The step size is fixed for non periodic waves and dependent on the frequency
+        The sampling size is fixed for non periodic waves and dependent on the frequency
         for the periodic waves. This is to ensure that no data is lost when going from
         discrete time to continous time (Sampling rate needs to be at least twice the 
-        frequency of the wave), to overcompensate the rate is chosen 10x the frequency. 
+        frequency of the wave), to overcompensate the rate is chosen for 10x frequency. 
+
         If the function has any singularities or output that is complex for 
-        any particular values of x, it should be handled in this function.
-        If there are no invalid outputs just override the method and return super.
+        any particular values of x, override the method to update the x values.
+        If there are no invalid outputs just return super().
+
         The input parameters include A and B as some functions have invalid outputs 
         that may be dependent on A or B, for example in the power function, 
         there are invalid outputs dependent on the power (B)
         Return: An array with the array for x in the first index and any message
         for any changes made to the domain in the 2nd index
         """
-        if not self.is_periodic():
+        if not self.frequency:
             # For non periodic functions or if the frequency is 0, the default
             # step_size is taken to be 0.001
             step_size = 0.001 
         else:
-            step_size = self.is_periodic()/10
+            step_size = 1/(self.frequency*10)
         x = np.arange(x_extremes[0], x_extremes[1], step_size)
         x = np.append(x, [x_extremes[1]])
         return [x]
 
 class SineGraph(Function):
     """
-    Name: Sine Wave y = Asin(Bx)
-    A: The amplitude of the wave (default amplitude = 1)
-    B: The frequency of the wave (default w = 1)
+    A simple sine wave in the form Asin(Bx)
     """
     name = "Sine Wave y = Asin(Bx)"
     A_des = "The amplitude of the wave"
     B_des = "The frequency of the wave"
     A_default = 1
     B_default = 1
-
-    def __init__(self):
-        self.frequency = self.B_default
-
-    def is_periodic(self):
-        if not self.frequency:
-            return self.frequency
-        else:
-            return (1/self.frequency)
+    frequency = B_default
 
     def run_function(self, x, A, B):
         return (A*np.sin(B*x))
     
     def x_range(self, x_extremes, A, B):
+        """
+        Set the frequency to input B and call the x_range 
+        method defined in the abstract class to create x array
+        """
         self.frequency = B
         return super().x_range(x_extremes, A, B)
 
 class PowerGraph(Function):
     """
-    Name: Power Graph y = Ax^B
-    A: A constant multiplier (default multiplier = 1)
-    B: The power by which x is raised (default power = 2)
+    A simple power graph in the form y = Ax^B
     """
     name = "Power Graph y = Ax^B"
     A_des = "A constant multiplier"
     B_des = "The power by which x is raised"
     A_default = 1
     B_default = 2
-
-    def is_periodic(self):
-        return super().is_periodic()
+    frequency = 0
 
     def run_function(self, x, A, B):
         return (A*(x**B))
@@ -164,10 +152,7 @@ class PowerGraph(Function):
         For fractional B, x min is changed to be > 0, as negative numbers
         raised to a fractional power gives rise to a complex solution.
         For whole number negative powers the domain is changed to not include
-        x = 0, this causes the graph to be plotted but a line is plotted
-        connecting the negative and positive side, further modification would
-        include to plot the function as two separate domains so that the two
-        sides do not touch.
+        x = 0.
         """
         if B < 1:
             if Fraction(B).limit_denominator(100).denominator == 1:
@@ -184,23 +169,29 @@ class PowerGraph(Function):
 
 class SawToothGraph(Function):
     """
-    Name: Sawtooth wave
-    A: Vertical Scaling (default amplitude = 2)
-    B: Vertical Shift (default shift = 1)
+    The Sawtooth wave has no formal equation. It is an asymetric triangle 
+    that is 3X units long, and is repeated over the domain.
     """
     name = "Sawtooth wave"
     A_des = "Vertical Scaling"
     B_des = "Vertical Shift"
     A_default = 2
     B_default = 1
-
-    def is_periodic(self):
-        return super().is_periodic()
+    # The x_range method is overwritten with a fixed time step as step size of 1 
+    # is large enough to ensure no data is lost
+    frequency = 3
 
     def run_function(self, x, A, B):
+        """
+        The graph is plotted by using one cycle of the asymetric triangle from the
+        origin and adding a horizontal shift left and right to repeat the triangle
+        over the entire domain
+        """
         y = []
         x_min = x[0]
-        # Check how far off the initial position is from 0
+        # If there are any partial waves due to the starting position, keep
+        # adding 1 till a multiple of 3 is reached to calculate the amount of 
+        # shift required in the starting position
         while(x_min % 3 != 0):
             x_min = x_min + 1
         # Add horizontal shift shift based on what the starting point is
@@ -209,7 +200,7 @@ class SawToothGraph(Function):
         # every 3 units of x, this is taken into account by subtracting 
         # the amount of shift needed every time a number divisible by 3 comes
         # the sawtooth graph can be represented using two functions (2 lines)
-        # one wavelength represents 3 coordinates, after switch the plot is shifted
+        # one wavelength represents 3 coordinates, after which the plot is shifted
         # to the right by an amount of h_shift
         for x_val in x:
             if x_val % 3 ==  0:
