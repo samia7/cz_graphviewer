@@ -176,7 +176,7 @@ class GraphViewer(QMainWindow):
         method to plot the graph if a function is selected
         """
         if self.selected_function is None:
-            QMessageBox.question(self, 'Error!', "No function is selected", 
+            QMessageBox.question(self, 'Error!', "Please select a function from the top", 
                                 QMessageBox.Ok, QMessageBox.Ok)
             self.xmin_textbox.setText("")
             self.xmax_textbox.setText("")

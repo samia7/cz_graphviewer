@@ -4,15 +4,16 @@
 Script that contains all the functions that can be viewed using the graph viewer UI. 
 The script contains an abstract class Function that is inherited by all the 
 subclasses that have the description for specific functions.
-In order to add new functions to be displayed by the UI, simply create a new class
-describing that function, and extend Functions class.
-For each class inherting Function:
-Name: Defines the name identifier used in the GUI
-A, B: The changable parameters defining the function
+
+To add new functions: 
+
+functions.py: Create a new class describing that function, and extend Functions class. All the 
+methods and properties that need to be overridden are decribed in the Functions class.
+
+graphviewer.py: Add the name of the class to the array 'functions' in the GraphViewer class.
 """ 
 from abc import ABC, abstractmethod
 from fractions import Fraction
-from math import pow
 import numpy as np
 
 class Function(ABC):
@@ -64,6 +65,15 @@ class Function(ABC):
         pass
 
     @abstractmethod
+    def is_periodic(self):
+        """
+        If the function is periodic return the period of the wave.
+        The period is used to determine the step size to plot the graph.
+        If the function is not periodic call super
+        """
+        return 0
+
+    @abstractmethod
     def run_function(self, x, A, B):
         """
         This method defines the operation that is performed by a function.
@@ -78,6 +88,11 @@ class Function(ABC):
     @abstractmethod
     def x_range(self, x_extremes, A, B):
         """
+        The x array is created in this method based on the min and max value of x.
+        The step size is fixed for non periodic waves and dependent on the frequency
+        for the periodic waves. This is to ensure that no data is lost when going from
+        discrete time to continous time (Sampling rate needs to be at least twice the 
+        frequency of the wave), to overcompensate the rate is chosen 10x the frequency. 
         If the function has any singularities or output that is complex for 
         any particular values of x, it should be handled in this function.
         If there are no invalid outputs just override the method and return super.
@@ -87,44 +102,61 @@ class Function(ABC):
         Return: An array with the array for x in the first index and any message
         for any changes made to the domain in the 2nd index
         """
-        # The number of iterations are decided based on the size of the domain
-        # This ensures that step size is small enough for accurate graph
-        iterations = int((x_extremes[1]-x_extremes[0])*100)
-        x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
+        if not self.is_periodic():
+            # For non periodic functions or if the frequency is 0, the default
+            # step_size is taken to be 0.001
+            step_size = 0.001 
+        else:
+            step_size = self.is_periodic()/10
+        x = np.arange(x_extremes[0], x_extremes[1], step_size)
+        x = np.append(x, [x_extremes[1]])
         return [x]
 
 class SineGraph(Function):
     """
-    Name: Sine Wave
+    Name: Sine Wave y = Asin(Bx)
     A: The amplitude of the wave (default amplitude = 1)
-    B: The time period of the wave (default period = 1)
+    B: The frequency of the wave (default w = 1)
     """
-    name = "Sine Wave"
+    name = "Sine Wave y = Asin(Bx)"
     A_des = "The amplitude of the wave"
-    B_des = "The time period of the wave"
+    B_des = "The frequency of the wave"
     A_default = 1
     B_default = 1
+
+    def __init__(self):
+        self.frequency = self.B_default
+
+    def is_periodic(self):
+        if not self.frequency:
+            return self.frequency
+        else:
+            return (1/self.frequency)
 
     def run_function(self, x, A, B):
         return (A*np.sin(B*x))
     
     def x_range(self, x_extremes, A, B):
+        self.frequency = B
         return super().x_range(x_extremes, A, B)
 
 class PowerGraph(Function):
     """
-    Name: Power Graph
+    Name: Power Graph y = Ax^B
     A: A constant multiplier (default multiplier = 1)
     B: The power by which x is raised (default power = 2)
     """
-    name = "Power Graph"
+    name = "Power Graph y = Ax^B"
     A_des = "A constant multiplier"
     B_des = "The power by which x is raised"
     A_default = 1
     B_default = 2
 
+    def is_periodic(self):
+        return super().is_periodic()
+
     def run_function(self, x, A, B):
-        return (A*np.power(x,B))
+        return (A*(x**B))
     
     def x_range(self, x_extremes, A, B):
         """
@@ -137,17 +169,14 @@ class PowerGraph(Function):
         include to plot the function as two separate domains so that the two
         sides do not touch.
         """
-        iterations = int((x_extremes[1]-x_extremes[0])*100)
         if B < 1:
-            frac = Fraction(B).limit_denominator(100).denominator
-            print(frac)
             if Fraction(B).limit_denominator(100).denominator == 1:
-                x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
+                x = super().x_range(x_extremes, A, B)[0]
                 x = x[x!=0]
-                change = 'Domain modified: Output excludes x = 0'
+                change = 'Domain modified: Output excludes x = 0 (0 is a point of singularity)'
             else:    
                 x_extremes[0] = 0.0001 if x_extremes[0] <= 0 else x_extremes[0]
-                x = np.linspace(x_extremes[0], x_extremes[1], num=iterations)
+                x = super().x_range(x_extremes, A, B)[0]
                 change = 'Domain modified: Output only valid for x > 0'
             return [x, change]
         else:
@@ -164,6 +193,9 @@ class SawToothGraph(Function):
     B_des = "Vertical Shift"
     A_default = 2
     B_default = 1
+
+    def is_periodic(self):
+        return super().is_periodic()
 
     def run_function(self, x, A, B):
         y = []
