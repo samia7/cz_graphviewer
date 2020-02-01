@@ -18,6 +18,7 @@ Make Executable
 ---------------
 
 chmod +x graphviewer.py
+
 chmod +x functions.py
 
 Run
