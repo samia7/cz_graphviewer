@@ -8,7 +8,7 @@ subclasses that have the description for specific functions.
 To add new functions: 
 
 functions.py: Create a new class describing that function, and extend Functions class. All the 
-methods and properties that need to be overridden are decribed in the Functions class.
+methods and properties that need to be overwritten are decribed in the Functions class.
 
 graphviewer.py: Add an object of the class to the array 'functions' in the GraphViewer class.
 """ 
@@ -91,7 +91,7 @@ class Function(ABC):
         frequency of the wave), to overcompensate the rate is chosen for 10x frequency. 
 
         If the function has any singularities or output that is complex for 
-        any particular values of x, override the method to update the x values.
+        any particular values of x, overwrite the method to update the x values.
         If there are no invalid outputs just return super().
 
         The input parameters include A and B as some functions have invalid outputs 
@@ -151,7 +151,7 @@ class PowerGraph(Function):
         The domain for x is modified for B < 1.
         For fractional B, x min is changed to be > 0, as negative numbers
         raised to a fractional power gives rise to a complex solution.
-        For whole number negative powers the domain is changed to not include
+        For whole number negative powers, the domain is changed to not include
         x = 0.
         """
         if B < 1:
@@ -194,11 +194,10 @@ class SawToothGraph(Function):
         # shift required in the starting position
         while(x_min % 3 != 0):
             x_min = x_min + 1
-        # Add horizontal shift shift based on what the starting point is
+        # Add horizontal shift based on what the starting point is
         h_shift = 3 - x_min
         # Plot the sawtooth wave, only the amount of shift changes after
-        # every 3 units of x, this is taken into account by subtracting 
-        # the amount of shift needed every time a number divisible by 3 comes
+        # every 3 units of x
         # the sawtooth graph can be represented using two functions (2 lines)
         # one wavelength represents 3 coordinates, after which the plot is shifted
         # to the right by an amount of h_shift
