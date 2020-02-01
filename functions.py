@@ -200,12 +200,14 @@ class SawToothGraph(Function):
         # every 3 units of x
         # the sawtooth graph can be represented using two functions (2 lines)
         # one wavelength represents 3 coordinates, after which the plot is shifted
-        # to the right by an amount of h_shift
+        # to the right by an amount of h_shift: f(x-h_shift)
         for x_val in x:
             if x_val % 3 ==  0:
                 h_shift = h_shift - 3
+                # Equation of the line for the left half of the triangle
                 y.append((x_val+h_shift)-0.5)
             else:
+                # Equation of the line for the right half of the triangle
                 y.append(-0.5*(x_val+h_shift)+1)
         # finally the vertical shifting and scaling is added        
         y = [(A*y_val)+B for y_val in y]
